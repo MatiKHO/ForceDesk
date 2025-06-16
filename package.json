@@ -1,0 +1,29 @@
+{
+  "name": "forcedesk",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "turbo run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MatiKHO/ForceDesk.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/MatiKHO/ForceDesk/issues"
+  },
+  "homepage": "https://github.com/MatiKHO/ForceDesk#readme",
+  "devDependencies": {
+    "turbo": "^2.5.4"
+  }
+}

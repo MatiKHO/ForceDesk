@@ -1,2 +1,2 @@
-# Bugsy
-Incident and Bugs Management Platform
+# ForceDesk - Incidents and Bugs Management Mini-Platform
+
