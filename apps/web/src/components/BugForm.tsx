@@ -4,12 +4,17 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import api from "../../lib/axios";
 import { toast } from "sonner";
 
 type BugPriority = "HIGH" | "MEDIUM" | "LOW";
-
 
 interface Props {
   onCreated: () => void;
@@ -33,7 +38,7 @@ export default function BugForm({ onCreated }: Props) {
       toast.success("Bug creado correctamente");
       setTitle("");
       setPriority("MEDIUM");
-      onCreated(); // Recarga la tabla
+      onCreated();
     } catch (err) {
       toast.error("Error al crear bug");
     } finally {
@@ -42,21 +47,28 @@ export default function BugForm({ onCreated }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-muted p-4 rounded-xl shadow">
-      <div>
-        <Label>Título</Label>
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 bg-muted p-6 rounded-xl shadow"
+    >
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Título</Label>
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
           placeholder="Ej: Error al guardar cambios"
+          className="h-10 w-100"
         />
       </div>
 
-      <div>
-        <Label>Prioridad</Label>
-        <Select value={priority} onValueChange={(v) => setPriority(v as BugPriority)}>
-          <SelectTrigger>
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Prioridad</Label>
+        <Select
+          value={priority}
+          onValueChange={(v) => setPriority(v as BugPriority)}
+        >
+          <SelectTrigger className="h-10 w-50">
             <SelectValue placeholder="Seleccionar prioridad" />
           </SelectTrigger>
           <SelectContent>
@@ -66,8 +78,12 @@ export default function BugForm({ onCreated }: Props) {
           </SelectContent>
         </Select>
       </div>
-
-      <Button type="submit" disabled={loading}>
+      
+      <Button
+        type="submit"
+        disabled={loading}
+        className=" h-10"
+      >
         {loading ? "Creando..." : "Crear incidencia"}
       </Button>
     </form>

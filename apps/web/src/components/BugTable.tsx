@@ -4,6 +4,20 @@ import { useEffect, useState } from "react";
 import api from "../../lib/axios";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Trash2, Edit, Check, X } from "lucide-react";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -42,6 +56,9 @@ export default function BugTable({
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(5);
   const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editingBugId, setEditingBugId] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
 
   const fetchBugs = async () => {
     const token = localStorage.getItem("token");
@@ -79,8 +96,59 @@ export default function BugTable({
     } catch (error: any) {
       console.error('Error al asignar la tarea:', error);
       const errorMessage = error.response?.data?.message || 'Error al asignar la tarea';
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
+  };
+
+  const handleDeleteBug = async (bugId: number) => {
+    toast.promise(
+      api.delete(`/bugs/${bugId}`).then(() => {
+        fetchBugs();
+        return 'Bug eliminado correctamente';
+      }),
+      {
+        loading: 'Eliminando bug...',
+        success: (message) => message,
+        error: (error) => {
+          console.error('Error al eliminar el bug:', error);
+          return error.response?.data?.message || 'Error al eliminar el bug';
+        },
+      }
+    );
+  };
+
+  const handleStartEdit = (bug: Bug) => {
+    setEditingBugId(bug.id);
+    setEditingTitle(bug.title);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBugId(null);
+    setEditingTitle("");
+  };
+
+  const handleSaveEdit = async (bugId: number) => {
+    if (!editingTitle.trim()) {
+      toast.error("El título no puede estar vacío");
+      return;
+    }
+
+    toast.promise(
+      api.patch(`/bugs/${bugId}`, { title: editingTitle.trim() }).then(() => {
+        fetchBugs();
+        setEditingBugId(null);
+        setEditingTitle("");
+        return 'Título actualizado correctamente';
+      }),
+      {
+        loading: 'Actualizando título...',
+        success: (message) => message,
+        error: (error) => {
+          console.error('Error al actualizar el título:', error);
+          return error.response?.data?.message || 'Error al actualizar el título';
+        },
+      }
+    );
   };
 
   const fetchUsers = async () => {
@@ -111,11 +179,57 @@ export default function BugTable({
         </TableHeader>
         <TableBody>
           {bugs.map((bug) => (
-            <TableRow key={bug.id}>
+            <TableRow key={bug.id} className="group">
               <TableCell>
                 {new Date(bug.createdAt).toLocaleDateString()}
               </TableCell>
-              <TableCell>{bug.title}</TableCell>
+              <TableCell>
+                {editingBugId === bug.id ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={editingTitle}
+                      onChange={(e) => setEditingTitle(e.target.value)}
+                      className="h-8 text-sm"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSaveEdit(bug.id);
+                        } else if (e.key === 'Escape') {
+                          handleCancelEdit();
+                        }
+                      }}
+                      autoFocus
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleSaveEdit(bug.id)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Check className="h-4 w-4 text-green-600" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleCancelEdit}
+                      className="h-8 w-8 p-0"
+                    >
+                      <X className="h-4 w-4 text-red-600" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="flex-1">{bug.title}</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleStartEdit(bug)}
+                      className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </TableCell>
               <TableCell>
                 <Badge variant={bug.status === "OPEN" ? "outline" : "default"}>
                   {bug.status}
@@ -182,6 +296,37 @@ export default function BugTable({
                     "Asignarme"
                   )}
                 </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => console.log('Delete button clicked for bug:', bug.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción no se puede deshacer. Esto eliminará permanentemente el bug "{bug.title}" y todos sus datos asociados.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          console.log('Delete confirmed for bug:', bug.id);
+                          handleDeleteBug(bug.id);
+                        }}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Eliminar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </TableCell>
             </TableRow>
           ))}

@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       id: decoded.sub || decoded.id
     };
     setUser(userWithId);
-    router.push("/");
+    router.push("/dashboard");
   };
 
   const logout = () => {

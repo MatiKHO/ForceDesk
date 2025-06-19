@@ -120,3 +120,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom toast styling */
+[data-sonner-toaster] [data-description] {
+  color: black !important;
+}
