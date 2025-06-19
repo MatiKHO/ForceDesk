@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import api from "@/../../lib/axios";
+import { useRouter } from "next/navigation";
+import api from "../../../lib/axios";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+  
 
   const login = async () => {
     try {
@@ -16,9 +19,8 @@ export default function LoginPage() {
 
       const token = response.data.access_token;
       localStorage.setItem("token", token);
-      alert("Login successful");
+      router.push("/dashboard");
     } catch (error) {
-      alert("Login failed");
     }
   };
 

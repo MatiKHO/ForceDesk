@@ -7,11 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  MASTER
+  PADAWAN
+}
+
 model User {
   id       Int       @id @default(autoincrement())
   username String    @unique
   password String
-  role     String    @default("user")
+  role     Role   @default(PADAWAN)
   bugs     Bug[]
 }
 
@@ -24,3 +29,6 @@ model Bug {
   priority   String   @default("MEDIUM")
   user       User?    @relation(fields: [assignedTo], references: [id])
 }
+
+
+

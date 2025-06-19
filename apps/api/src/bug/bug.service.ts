@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateBugDto, UpdateBugDto, BugFilterDto, BugStatus } from './dto/bug.dto';
 
@@ -91,28 +91,75 @@ export class BugService {
     });
   }
 
-  async update(id: number, updateBugDto: UpdateBugDto) {
-    return this.prisma.bug.update({
-      where: { id },
-      data: updateBugDto,
-    });
-  }
+  async update(id: number, updateBugDto: UpdateBugDto, userRequestingId: number) {
+    const bug = await this.prisma.bug.findUnique({ where: { id } });
+    if (!bug) {
+      throw new NotFoundException('Bug not found');
+    }
 
-  async assignTo(id: number, userId: number | null) {
-    return this.prisma.bug.update({
+    const { assignedTo, ...otherUpdates } = updateBugDto;
+
+    if (assignedTo !== null && assignedTo !== undefined) {
+      const userExists = await this.prisma.user.findUnique({
+        where: { id: assignedTo }
+      });
+      if (!userExists) {
+        throw new BadRequestException('Usuario asignado no existe');
+      }
+    }
+
+    const updatedBug = await this.prisma.bug.update({
       where: { id },
       data: {
-        assignedTo: userId,
+        ...otherUpdates,
+        assignedTo: assignedTo
       },
       include: {
         user: {
           select: {
             id: true,
-            username: true,
-          },
-        },
-      },
+            username: true
+          }
+        }
+      }
     });
+   
+    return updatedBug;
+  }
+
+  async assignBugToUser(bugId: number, userId: number | null) {
+    const bug = await this.prisma.bug.findUnique({
+      where: { id: bugId }
+    });
+
+    if (!bug) {
+      throw new NotFoundException('Bug no encontrado');
+    }
+
+    if (userId !== null) {
+      const userExists = await this.prisma.user.findUnique({
+        where: { id: userId }
+      });
+
+      if (!userExists) {
+        throw new BadRequestException('Usuario no encontrado');
+      }
+    }
+
+    try {
+      return await this.prisma.bug.update({
+        where: { id: bugId },
+        data: {
+          assignedTo: userId
+        },
+        include: {
+          user: true
+        }
+      });
+    } catch (error) {
+      console.error('Error al actualizar el bug:', error);
+      throw new BadRequestException('Error al actualizar la asignación');
+    }
   }
 
   async updateStatus(id: number, status: BugStatus) {
@@ -128,5 +175,13 @@ export class BugService {
         },
       },
     });
+  }
+
+  async delete(id: number) {
+    const bug = await this.prisma.bug.findUnique({ where: { id } });
+    if (!bug) {
+      throw new NotFoundException('Bug not found');
+    }
+    return this.prisma.bug.delete({ where: { id } });
   }
 }

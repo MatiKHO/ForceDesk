@@ -25,5 +25,9 @@
   "homepage": "https://github.com/MatiKHO/ForceDesk#readme",
   "devDependencies": {
     "turbo": "^2.5.4"
+  },
+  "dependencies": {
+    "@types/multer": "^1.4.13",
+    "multer": "^2.0.1"
   }
 }

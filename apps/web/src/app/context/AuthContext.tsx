@@ -15,6 +15,7 @@ interface User {
   username: string;
   role: string;
   exp: number;
+  sub?: number;
 }
 
 interface AuthContextType {
@@ -38,11 +39,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const decoded = jwtDecode<User>(token);
         if (decoded.exp * 1000 > Date.now()) {
-          setUser(decoded);
+          const userWithId = {
+            ...decoded,
+            id: decoded.sub || decoded.id
+          };
+          setUser(userWithId);
         } else {
           logout();
         }
-      } catch {
+      } catch (error) {
+        console.error('Error decodificando token:', error);
         logout();
       }
     }
@@ -52,7 +58,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (token: string) => {
     localStorage.setItem("token", token);
     const decoded = jwtDecode<User>(token);
-    setUser(decoded);
+    const userWithId = {
+      ...decoded,
+      id: decoded.sub || decoded.id
+    };
+    setUser(userWithId);
     router.push("/");
   };
 

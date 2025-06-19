@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../app/context/AuthContext";
+import { Spinner } from "./ui/spinner";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
@@ -15,7 +16,11 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     }, [user, loading, router]);
   
     if (loading || !user) {
-      return <div className="p-8">Cargando...</div>; // puedes poner un spinner
+      return (
+        <div className="flex justify-center items-center h-40">
+            <Spinner size="large" />
+        </div>
+      )
     }
   
     return <>{children}</>;
