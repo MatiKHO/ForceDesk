@@ -12,7 +12,7 @@ model User {
   username String    @unique
   password String
   role     String    @default("user")
-  bugs Bug[]
+  bugs     Bug[]
 }
 
 model Bug {
@@ -21,6 +21,6 @@ model Bug {
   status     String   @default("OPEN")
   createdAt  DateTime @default(now())
   assignedTo Int?
-  priority   String?
+  priority   String   @default("MEDIUM")
   user       User?    @relation(fields: [assignedTo], references: [id])
 }
