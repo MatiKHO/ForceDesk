@@ -202,7 +202,7 @@ export default function Home() {
             </span>
           </div>
           <p className="text-muted-foreground">
-            © 2024 ForceDesk. Que la fuerza te acompañe en la gestión de incidencias.
+            © 2025ForceDesk. Que la fuerza te acompañe en la gestión de incidencias.
           </p>
         </div>
       </footer>
